@@ -71,7 +71,18 @@ export async function invokeLLM({ prompt, response_json_schema }) {
         const repaired = jsonrepair(jsonStr);
         return JSON.parse(repaired);
       } catch (repairError) {
-        throw parseError; // Throw the original parse error if repair fails
+        // Extract a snippet of text around the parsing failure location for easier debugging
+        let snippet = "";
+        const posMatch = parseError.message.match(/at position (\d+)/);
+        if (posMatch) {
+          const pos = parseInt(posMatch[1], 10);
+          const start = Math.max(0, pos - 150);
+          const end = Math.min(jsonStr.length, pos + 150);
+          snippet = `\n\nSnippet around position ${pos}:\n... ${jsonStr.slice(start, pos)} 👉 ${jsonStr.slice(pos, pos + 10)} ...`;
+        } else {
+          snippet = `\n\nRaw end of output:\n... ${jsonStr.slice(-300)}`;
+        }
+        throw new Error(`${parseError.message}${snippet}\n(Total Length: ${jsonStr.length} characters)`);
       }
     }
   };
