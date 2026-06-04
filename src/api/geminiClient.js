@@ -1,4 +1,6 @@
 // Gemini API Client — Free alternative to Base44 LLM
+import { jsonrepair } from "jsonrepair";
+
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
@@ -60,21 +62,43 @@ export async function invokeLLM({ prompt, response_json_schema }) {
     throw new Error("Empty response from Gemini API");
   }
 
+  // Helper to parse JSON with jsonrepair fallback
+  const parseJsonSafe = (jsonStr) => {
+    try {
+      return JSON.parse(jsonStr);
+    } catch (parseError) {
+      try {
+        const repaired = jsonrepair(jsonStr);
+        return JSON.parse(repaired);
+      } catch (repairError) {
+        throw parseError; // Throw the original parse error if repair fails
+      }
+    }
+  };
+
   // Parse JSON from response
   try {
     // Try direct parse first
-    return JSON.parse(text);
-  } catch {
+    return parseJsonSafe(text);
+  } catch (err) {
     // Try to extract JSON from markdown code blocks
     const jsonMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[1].trim());
+      try {
+        return parseJsonSafe(jsonMatch[1].trim());
+      } catch (matchErr) {
+        err = matchErr;
+      }
     }
     // Try to find JSON object/array in the text
     const objectMatch = text.match(/\{[\s\S]*\}/);
     if (objectMatch) {
-      return JSON.parse(objectMatch[0]);
+      try {
+        return parseJsonSafe(objectMatch[0]);
+      } catch (objErr) {
+        err = objErr;
+      }
     }
-    throw new Error("Failed to parse JSON from Gemini response: " + text.slice(0, 200));
+    throw new Error(`Failed to parse JSON from Gemini response: ${err.message}. Raw output: ${text.slice(0, 300)}...`);
   }
 }
