@@ -91,6 +91,30 @@ Output ONLY valid JSON matching the full schema. Pure JSON.`,
 
   // Defensive defaults
   if (schemaResult) {
+    // Map alternative naming structures from the LLM
+    if (!schemaResult.db_schema && schemaResult.database_schema) {
+      schemaResult.db_schema = schemaResult.database_schema;
+    }
+    if (!schemaResult.db_schema && schemaResult.db) {
+      schemaResult.db_schema = schemaResult.db;
+    }
+    if (!schemaResult.ui_schema && schemaResult.ui) {
+      schemaResult.ui_schema = schemaResult.ui;
+    }
+    if (!schemaResult.api_schema && schemaResult.api) {
+      schemaResult.api_schema = schemaResult.api;
+    }
+
+    // Default missing properties to empty structures
+    if (!schemaResult.db_schema) {
+      schemaResult.db_schema = { tables: [] };
+    }
+    if (!schemaResult.api_schema) {
+      schemaResult.api_schema = { endpoints: [] };
+    }
+    if (!schemaResult.ui_schema) {
+      schemaResult.ui_schema = { pages: [] };
+    }
     if (!schemaResult.auth_schema) {
       schemaResult.auth_schema = {
         strategy: "JWT",
