@@ -115,6 +115,15 @@ Output ONLY valid JSON matching the full schema. Pure JSON.`,
     if (!schemaResult.ui_schema) {
       schemaResult.ui_schema = { pages: [] };
     }
+
+    // Filter out malformed relations in tables (missing foreign_key or references)
+    if (schemaResult.db_schema && Array.isArray(schemaResult.db_schema.tables)) {
+      for (const table of schemaResult.db_schema.tables) {
+        if (table.relations && Array.isArray(table.relations)) {
+          table.relations = table.relations.filter(r => r && r.foreign_key && r.references);
+        }
+      }
+    }
     if (!schemaResult.auth_schema) {
       schemaResult.auth_schema = {
         strategy: "JWT",
