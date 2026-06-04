@@ -40,28 +40,6 @@ export async function invokeLLM({ prompt, response_json_schema }) {
     requestBody.generationConfig.responseSchema = response_json_schema;
   }
 
-  const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestBody),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const errorMessage = errorData?.error?.message || `Gemini API error: ${response.status}`;
-    throw new Error(errorMessage);
-  }
-
-  const data = await response.json();
-
-  // Extract text from Gemini response
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new Error("Empty response from Gemini API");
-  }
-
   // Helper to parse JSON with jsonrepair fallback
   const parseJsonSafe = (jsonStr) => {
     try {
@@ -87,29 +65,79 @@ export async function invokeLLM({ prompt, response_json_schema }) {
     }
   };
 
-  // Parse JSON from response
-  try {
-    // Try direct parse first
-    return parseJsonSafe(text);
-  } catch (err) {
-    // Try to extract JSON from markdown code blocks
-    const jsonMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-    if (jsonMatch) {
-      try {
-        return parseJsonSafe(jsonMatch[1].trim());
-      } catch (matchErr) {
-        err = matchErr;
+  let attempts = 0;
+  const maxAttempts = 5;
+  let delay = 2000; // Start with a 2-second delay
+
+  while (attempts < maxAttempts) {
+    attempts++;
+    try {
+      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData?.error?.message || `Gemini API error: ${response.status}`;
+        
+        // If rate limit (429) or temporary overload (503), retry with delay
+        if ((response.status === 429 || response.status === 503) && attempts < maxAttempts) {
+          console.warn(`Gemini API returned transient status ${response.status}. Retrying in ${delay}ms... (Attempt ${attempts} of ${maxAttempts})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2; // Exponential backoff
+          continue;
+        }
+        throw new Error(errorMessage);
       }
-    }
-    // Try to find JSON object/array in the text
-    const objectMatch = text.match(/\{[\s\S]*\}/);
-    if (objectMatch) {
-      try {
-        return parseJsonSafe(objectMatch[0]);
-      } catch (objErr) {
-        err = objErr;
+
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error("Empty response from Gemini API");
       }
+
+      // Parse JSON from response
+      try {
+        return parseJsonSafe(text);
+      } catch (err) {
+        const jsonMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+        if (jsonMatch) {
+          try {
+            return parseJsonSafe(jsonMatch[1].trim());
+          } catch (matchErr) {
+            err = matchErr;
+          }
+        }
+        const objectMatch = text.match(/\{[\s\S]*\}/);
+        if (objectMatch) {
+          try {
+            return parseJsonSafe(objectMatch[0]);
+          } catch (objErr) {
+            err = objErr;
+          }
+        }
+        throw err;
+      }
+
+    } catch (err) {
+      const isTransient = err.message.includes("429") || 
+                          err.message.includes("503") || 
+                          err.message.includes("high demand") || 
+                          err.message.includes("overloaded") ||
+                          err.message.includes("rate limit") ||
+                          err.message.includes("Failed to fetch");
+
+      if (isTransient && attempts < maxAttempts) {
+        console.warn(`Transient error in invokeLLM: ${err.message}. Retrying in ${delay}ms... (Attempt ${attempts} of ${maxAttempts})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff
+        continue;
+      }
+      throw err;
     }
-    throw new Error(`Failed to parse JSON from Gemini response: ${err.message}. Raw output: ${text.slice(0, 300)}...`);
   }
 }
