@@ -20,6 +20,16 @@ Rules:
 Output ONLY valid JSON matching this exact schema. No explanation, no markdown, pure JSON.`,
     response_json_schema: IR_SCHEMA
   });
+
+  // Defensive defaults
+  if (result) {
+    if (!result.entities) result.entities = [];
+    if (!result.roles) result.roles = [];
+    if (!result.features) result.features = [];
+    if (!result.goals) result.goals = [];
+    if (!result.app_type) result.app_type = "web_app";
+  }
+
   const errors = validateAgainstSchema(result, IR_SCHEMA);
   return { output: result, errors };
 }
@@ -41,6 +51,14 @@ Rules:
 Output ONLY valid JSON. Pure JSON, no markdown.`,
     response_json_schema: ARCHITECTURE_SCHEMA
   });
+
+  // Defensive defaults
+  if (result) {
+    if (!result.user_flows) result.user_flows = [];
+    if (!result.role_permissions) result.role_permissions = [];
+    if (!result.module_map) result.module_map = [];
+  }
+
   const errors = validateAgainstSchema(result, ARCHITECTURE_SCHEMA);
   return { output: result, errors };
 }
@@ -70,6 +88,27 @@ FIELD CONSISTENCY MANDATE:
 Output ONLY valid JSON matching the full schema. Pure JSON.`,
     response_json_schema: FULL_SCHEMA
   });
+
+  // Defensive defaults
+  if (schemaResult) {
+    if (!schemaResult.auth_schema) {
+      schemaResult.auth_schema = {
+        strategy: "JWT",
+        roles: irOutput?.roles || ["user"],
+        restricted_routes: []
+      };
+    }
+    if (!schemaResult.assumptions) {
+      schemaResult.assumptions = [];
+    }
+    if (!schemaResult.validation_status) {
+      schemaResult.validation_status = "pending";
+    }
+    if (!schemaResult.repair_log) {
+      schemaResult.repair_log = [];
+    }
+  }
+
   const errors = validateAgainstSchema(schemaResult, FULL_SCHEMA);
   return { output: schemaResult, errors };
 }
