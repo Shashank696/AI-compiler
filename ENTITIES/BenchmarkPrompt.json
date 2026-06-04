@@ -1,0 +1,41 @@
+{
+  "name": "BenchmarkPrompt",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Short name for the benchmark prompt"
+    },
+    "prompt_text": {
+      "type": "string",
+      "description": "Full prompt text"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "real_product",
+        "edge_case"
+      ],
+      "description": "Prompt category"
+    },
+    "edge_case_type": {
+      "type": "string",
+      "enum": [
+        "vague",
+        "conflicting",
+        "incomplete"
+      ],
+      "description": "Edge case subtype"
+    },
+    "is_preloaded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a preloaded seed prompt"
+    }
+  },
+  "required": [
+    "title",
+    "prompt_text",
+    "category"
+  ]
+}

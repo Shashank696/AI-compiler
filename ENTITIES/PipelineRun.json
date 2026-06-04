@@ -1,0 +1,92 @@
+{
+  "name": "PipelineRun",
+  "type": "object",
+  "properties": {
+    "prompt": {
+      "type": "string",
+      "description": "Original natural language prompt"
+    },
+    "ir_output": {
+      "type": "string",
+      "description": "Stage 1 Intent IR JSON string"
+    },
+    "architecture_output": {
+      "type": "string",
+      "description": "Stage 2 Architecture JSON string"
+    },
+    "ui_schema": {
+      "type": "string",
+      "description": "Stage 3 UI Schema JSON string"
+    },
+    "api_schema": {
+      "type": "string",
+      "description": "Stage 3 API Schema JSON string"
+    },
+    "db_schema": {
+      "type": "string",
+      "description": "Stage 3 DB Schema JSON string"
+    },
+    "auth_schema": {
+      "type": "string",
+      "description": "Stage 3 Auth Schema JSON string"
+    },
+    "dependency_graph": {
+      "type": "string",
+      "description": "Dependency graph JSON string"
+    },
+    "validation_report": {
+      "type": "string",
+      "description": "Validation report JSON string"
+    },
+    "repair_log": {
+      "type": "string",
+      "description": "Repair actions log JSON string"
+    },
+    "final_json": {
+      "type": "string",
+      "description": "Final validated config JSON string"
+    },
+    "runtime_files": {
+      "type": "string",
+      "description": "Generated runtime files JSON string"
+    },
+    "assumptions": {
+      "type": "string",
+      "description": "Assumptions list JSON string"
+    },
+    "repair_count": {
+      "type": "number",
+      "description": "Number of repairs applied"
+    },
+    "stage_latencies": {
+      "type": "string",
+      "description": "Per-stage latency JSON string"
+    },
+    "total_latency_ms": {
+      "type": "number",
+      "description": "Total pipeline latency in ms"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "success",
+        "repaired",
+        "failed"
+      ],
+      "default": "running"
+    },
+    "failure_stage": {
+      "type": "string",
+      "description": "Stage where failure occurred if any"
+    },
+    "failure_type": {
+      "type": "string",
+      "description": "Type of failure if any"
+    }
+  },
+  "required": [
+    "prompt",
+    "status"
+  ]
+}
