@@ -1,11 +1,9 @@
-import { base44 } from "@/api/base44Client";
+import { invokeLLM } from "@/api/geminiClient";
 import { IR_SCHEMA, ARCHITECTURE_SCHEMA, FULL_SCHEMA, validateAgainstSchema, buildDependencyGraph } from "./schemas";
-
-const LLM = base44.integrations.Core.InvokeLLM;
 
 // ─── Stage 1: Intent Extractor ───────────────────────────────────────────────
 export async function runStage1(prompt) {
-  const result = await LLM({
+  const result = await invokeLLM({
     prompt: `You are a compiler's front-end: a precise Intent Extractor.
 Analyze the following natural language app description and extract a canonical Intermediate Representation (IR).
 
@@ -28,7 +26,7 @@ Output ONLY valid JSON matching this exact schema. No explanation, no markdown, 
 
 // ─── Stage 2: Architecture Generator ─────────────────────────────────────────
 export async function runStage2(irOutput) {
-  const result = await LLM({
+  const result = await invokeLLM({
     prompt: `You are a system architect. Given this canonical IR, generate the application architecture.
 
 IR INPUT: ${JSON.stringify(irOutput, null, 2)}
@@ -49,7 +47,7 @@ Output ONLY valid JSON. Pure JSON, no markdown.`,
 
 // ─── Stage 3: Schema Generator ───────────────────────────────────────────────
 export async function runStage3(irOutput, architectureOutput) {
-  const schemaResult = await LLM({
+  const schemaResult = await invokeLLM({
     prompt: `You are a schema compiler. Generate complete typed schemas from IR and Architecture.
 
 IR: ${JSON.stringify(irOutput, null, 2)}
@@ -99,7 +97,7 @@ export async function runStage4(schemas) {
 export async function runStage5(schemas, issues) {
   if (issues.length === 0) return { output: schemas, repair_log: [], repairs_applied: 0 };
 
-  const result = await LLM({
+  const result = await invokeLLM({
     prompt: `You are a compiler's repair engine. Fix ONLY the detected schema mismatches below.
 
 CURRENT SCHEMAS: ${JSON.stringify(schemas, null, 2)}
@@ -125,7 +123,7 @@ Output ONLY the complete corrected JSON with all schemas intact. Pure JSON.`,
 
 // ─── Stage 6: Refinement ─────────────────────────────────────────────────────
 export async function runStage6(irOutput, schemas) {
-  const result = await LLM({
+  const result = await invokeLLM({
     prompt: `You are the final refinement pass of a compiler. Perform a cross-layer consistency check.
 
 IR (source of truth): ${JSON.stringify(irOutput, null, 2)}

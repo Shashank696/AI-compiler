@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { PipelineRun } from "@/api/localStorageDB";
 import { Check, AlertTriangle, X, Clock, Loader2, ChevronRight, Database, Globe, Layout, Shield, Cpu, Wrench, Search, GitMerge } from "lucide-react";
 import { cn } from "@/lib/utils";
 import JsonViewer from "@/components/compiler/JsonViewer";
@@ -66,7 +66,7 @@ export default function PipelineViz() {
 
   const { data: runs = [] } = useQuery({
     queryKey: ["pipeline-runs"],
-    queryFn: () => base44.entities.PipelineRun.list("-created_date", 20),
+    queryFn: () => PipelineRun.list("-created_date", 20),
   });
 
   const run = selectedRun ? runs.find(r => r.id === selectedRun) : runs[0] || null;

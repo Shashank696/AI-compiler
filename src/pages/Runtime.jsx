@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { PipelineRun } from "@/api/localStorageDB";
 import { Link } from "react-router-dom";
 import { FileCode, Download, FileText, Database, Globe, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export default function Runtime() {
 
   const { data: runs = [] } = useQuery({
     queryKey: ["pipeline-runs-runtime"],
-    queryFn: () => base44.entities.PipelineRun.list("-created_date", 20),
+    queryFn: () => PipelineRun.list("-created_date", 20),
     select: (data) => data.filter(r => r.runtime_files),
   });
 

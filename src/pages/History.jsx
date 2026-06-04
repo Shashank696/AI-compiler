@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { PipelineRun } from "@/api/localStorageDB";
 import { Link } from "react-router-dom";
 import { Clock, ChevronRight, CheckCircle2, Wrench, XCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ export default function History() {
 
   const { data: runs = [], isLoading } = useQuery({
     queryKey: ["pipeline-runs-all"],
-    queryFn: () => base44.entities.PipelineRun.list("-created_date", 50),
+    queryFn: () => PipelineRun.list("-created_date", 50),
   });
 
   const selectedRun = runs.find(r => r.id === selectedRunId);

@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { PipelineRun } from "@/api/localStorageDB";
 import { runStage1, runStage2, runStage3, runStage4, runStage5, runStage6, runStage7 } from "./stages";
 
 export async function orchestratePipeline(prompt, onStageUpdate) {
@@ -8,7 +8,7 @@ export async function orchestratePipeline(prompt, onStageUpdate) {
   let runId = null;
 
   // Create initial run record
-  const runRecord = await base44.entities.PipelineRun.create({
+  const runRecord = await PipelineRun.create({
     prompt,
     status: "running",
     repair_count: 0,
@@ -110,7 +110,7 @@ export async function orchestratePipeline(prompt, onStageUpdate) {
     };
 
     // Update PipelineRun record
-    await base44.entities.PipelineRun.update(runId, {
+    await PipelineRun.update(runId, {
       ir_output: JSON.stringify(stage1.output),
       architecture_output: JSON.stringify(stage2.output),
       ui_schema: JSON.stringify(currentSchemas.ui_schema),
@@ -143,7 +143,7 @@ export async function orchestratePipeline(prompt, onStageUpdate) {
   } catch (err) {
     const totalLatency = Date.now() - pipelineStart;
     if (runId) {
-      await base44.entities.PipelineRun.update(runId, {
+      await PipelineRun.update(runId, {
         status: "failed",
         failure_type: err.message?.slice(0, 500),
         total_latency_ms: totalLatency,

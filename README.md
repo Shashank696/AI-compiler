@@ -1,39 +1,62 @@
-**Welcome to your Base44 project** 
+# AI Compiler — AppCompiler
 
-**About**
+> Natural Language → Intermediate Representation → Architecture → Validated Schemas → Executable Runtime
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+A 7-stage AI compiler pipeline that transforms natural language app descriptions into complete application configurations, including UI schemas, API endpoints, database schemas, and generated runtime code.
 
-This project contains everything you need to run your app locally.
+## Features
 
-**Edit the code in your local development environment**
+- **7-Stage Pipeline**: NL → IR → Architecture → Schemas → Validation → Repair → Runtime
+- **Automated Repair Engine**: Auto-fixes schema mismatches and inconsistencies
+- **Pipeline Visualization**: Interactive flow diagram of the compiler pipeline
+- **Evaluation Dashboard**: Benchmark 20 prompts (10 real + 10 edge cases)
+- **Runtime Code Generation**: Generates FastAPI routes, SQL schemas, Dockerfiles, and HTML pages
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+## Tech Stack
 
-**Prerequisites:** 
+- **Frontend**: React + Vite + TailwindCSS
+- **AI**: Google Gemini API (free tier)
+- **Storage**: Browser localStorage (no backend needed)
+- **Deployment**: Vercel
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
+## Getting Started
 
+### Prerequisites
+- Node.js 18+
+- A free Google Gemini API key
+
+### Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/Shashank696/AI-compiler.git
+cd AI-compiler
 ```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
 
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+2. Install dependencies:
+```bash
+npm install
 ```
 
-Run the app: `npm run dev`
+3. Create a `.env.local` file:
+```
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+```
 
-**Publish your changes**
+> Get a free API key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey) — no credit card required.
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+4. Run the app:
+```bash
+npm run dev
+```
 
-**Docs & Support**
+## Deployment (Vercel)
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+1. Push to GitHub
+2. Import the repo on [vercel.com/new](https://vercel.com/new)
+3. Add `VITE_GEMINI_API_KEY` as an environment variable
+4. Deploy 🚀
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+## License
+
+MIT
